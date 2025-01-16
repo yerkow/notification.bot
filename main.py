@@ -139,35 +139,21 @@ async def check_websites(context: ContextTypes.DEFAULT_TYPE):
         else:
             unavailable_sites.append((clean_url(url), status_code))
 
-    message = "🌐 *Результаты проверки сайтов:*\n\n"
-
-    if available_sites:
-        message += "✅ *Доступные сайты:*\n"
-        message += "\n".join(
-            f"• [{url}](https://{url}) (Status: {code})"
-            for url, code in available_sites
-        )
-        message += "\n\n"
-    else:
-        message += "❌ *Нет доступных сайтов!*\n\n"
-
     if unavailable_sites:
+        message = "🌐 *Результаты проверки сайтов:*\n\n"
         message += "❌ *Недоступные сайты:*\n"
         message += "\n".join(
             f"• [{url}](https://{url}) (Status: {code or 'Unknown'})"
             for url, code in unavailable_sites
         )
-    else:
-        message += "✅ *Все сайты доступны!*\n"
-
-    chat_ids = get_all_chat_ids()
-    for chat_id in chat_ids:
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text=message,
-            parse_mode="Markdown",
-            disable_web_page_preview=True,
-        )
+        chat_ids = get_all_chat_ids()
+        for chat_id in chat_ids:
+            await context.bot.send_message(
+                chat_id=chat_id,
+                text=message,
+                parse_mode="Markdown",
+                disable_web_page_preview=True,
+            )
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -293,10 +279,11 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    job_queue = app.job_queue
-    job_queue.run_repeating(
-        check_websites, interval=1800, first=get_time_until_next_half_hour()
-    )
+    # Удаляем автоматическую проверку сайтов
+    # job_queue = app.job_queue
+    # job_queue.run_repeating(
+    #     check_websites, interval=1800, first=get_time_until_next_half_hour()
+    # )
 
     app.run_polling()
 
